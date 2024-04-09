@@ -24,7 +24,7 @@ struct Block
 
 int main()
 {
-    Window window(glm::vec2(1280, 720), "Fart");
+    Window window(glm::vec2(1280, 720), "Window");
 
     glfwSetInputMode(window.m_window, GLFW_CURSOR, GLFW_CURSOR_DISABLED); 
 
