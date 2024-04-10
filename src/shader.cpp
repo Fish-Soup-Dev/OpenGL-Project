@@ -2,7 +2,7 @@
 
 Shader::Shader()
 {
-    
+    m_ID = glCreateProgram();
 }
 
 Shader::~Shader()
@@ -74,7 +74,6 @@ void Shader::load(const char* vertexPath, const char* fragmentPath)
         std::cout << "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n" << infoLog << std::endl;
     }
 
-    m_ID = glCreateProgram();
     glAttachShader(m_ID, vertex);
     glAttachShader(m_ID, fragment);
     glLinkProgram(m_ID);

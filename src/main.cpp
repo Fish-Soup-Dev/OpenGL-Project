@@ -5,13 +5,14 @@
 
 #define GLEW_STATIC
 #include <GL/glew.h>
+
 #include <GLFW/glfw3.h>
+
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
-#define STB_IMAGE_IMPLEMENTATION
-#include <stb/stb_image.h>
 
 #include "shader.hpp"
+#include "texture.hpp"
 #include "text.hpp"
 #include "window.hpp"
 #include "camera.hpp"
@@ -45,58 +46,8 @@ int main()
     std::vector<unsigned int> indices;
 
     
-
-    unsigned int texture;
-    glGenTextures(1, &texture);
-    glBindTexture(GL_TEXTURE_2D_ARRAY, texture);
-    
-    glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_S, GL_REPEAT);	
-    glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_T, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    
-    stbi_set_flip_vertically_on_load(true);  
-
-    int width, height, nrChannels;
-    unsigned char *data = stbi_load("assets/TextureAtlas.png", &width, &height, &nrChannels, 0);
-
-    if (data)
-    {
-        int tileW = 16;           // number of pixels in a row of 1 tile
-        int tileH = 16;           // number of pixels in a column of 1 tile
-        int channels = 4;         // 4 for RGBA
-
-        int tilesX = 8;
-        int tilesY = 8;
-        int imageCount = tilesX * tilesY;
-
-        glTexImage3D(GL_TEXTURE_2D_ARRAY, 0, GL_RGBA8, tileW, tileH, imageCount, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
-
-        std::vector<unsigned char> tile(tileW * tileH * channels);
-        int tileSizeX = tileW * channels;
-        int rowLen    = tilesX * tileSizeX;
-
-        for (int iy = 0; iy < tilesY; ++ iy)
-        {
-            for (int ix = 0; ix < tilesX; ++ ix)
-            {
-                unsigned char *ptr = data + iy*rowLen + ix*tileSizeX;
-                for (int row = 0; row < tileH; ++ row)
-                    std::copy(ptr + row*rowLen, ptr + row*rowLen + tileSizeX,
-                            tile.begin() + row*tileSizeX);
-
-
-                int i = iy * tilesX + ix;
-                glTexSubImage3D(GL_TEXTURE_2D_ARRAY, 0, 0, 0, i, tileW, tileH, 1, GL_RGBA, GL_UNSIGNED_BYTE, tile.data());
-            }
-        }
-    }
-    else
-    {
-        std::cout << "Failed to load texture" << std::endl;
-    }
-
-    stbi_image_free(data);
+    Texture2DA TextureArray;
+    TextureArray.loadImageArray("assets/TextureAtlas.png", true, glm::vec2(16, 16), glm::vec2(8, 8));
 
     Shader textureShader;
     textureShader.load("shaders/texture.vert", "shaders/texture.frag");
@@ -169,8 +120,7 @@ int main()
             previousTime = currentTime;
         }
 
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D_ARRAY, texture);
+        TextureArray.use();
 
         projection = glm::perspective(glm::radians(45.0f), static_cast<float>(window.m_windowSize.x) / static_cast<float>(window.m_windowSize.y), 0.1f, 100.0f);
         textureShader.use();
