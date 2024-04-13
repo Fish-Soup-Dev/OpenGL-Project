@@ -22,6 +22,7 @@ public:
     bool isWindowOpen();
     void clear();
     void swap();
+    void setCursor(bool mode);
     glm::mat4 getWindowProjection();
 
 private:

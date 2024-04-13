@@ -67,6 +67,14 @@ void Window::swap()
     glfwSwapBuffers(m_window);
 }
 
+void Window::setCursor(bool mode)
+{
+    if (mode)
+        glfwSetInputMode(m_window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+    else
+        glfwSetInputMode(m_window, GLFW_CURSOR, GLFW_CURSOR_DISABLED); 
+}
+
 glm::mat4 Window::getWindowProjection()
 {
     return glm::ortho(0.0f, static_cast<float>(m_windowSize.x), 0.0f, static_cast<float>(m_windowSize.y));

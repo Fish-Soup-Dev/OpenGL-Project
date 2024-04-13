@@ -17,6 +17,8 @@
 #include "window.hpp"
 #include "camera.hpp"
 #include "block.hpp"
+#include "vertexBuffer.hpp"
+#include "indexBuffer.hpp"
 
 struct Block
 {
@@ -26,8 +28,7 @@ struct Block
 int main()
 {
     Window window(glm::vec2(1280, 720), "Window");
-
-    glfwSetInputMode(window.m_window, GLFW_CURSOR, GLFW_CURSOR_DISABLED); 
+    //window.setCursor(false);
 
     Text text;
     text.loadFont("fonts/8bitPlus8-Regular.ttf");
@@ -46,25 +47,23 @@ int main()
     std::vector<unsigned int> indices;
 
     
-    Texture2DA TextureArray;
-    TextureArray.loadImageArray("assets/TextureAtlas.png", true, glm::vec2(16, 16), glm::vec2(8, 8));
+    Texture2DA textureArray;
+    textureArray.loadImageArray("assets/TextureAtlas.png", true, glm::vec2(16, 16), glm::vec2(8, 8));
 
     Shader textureShader;
     textureShader.load("shaders/texture.vert", "shaders/texture.frag");
     textureShader.setInt("texture1", 0);
 
-    unsigned int VBO, VAO, EBO;
-    glGenVertexArrays(1, &VAO);
-    glGenBuffers(1, &VBO);
-    glGenBuffers(1, &EBO);
+    VertexBuffer textureVBO;
+    IndexBuffer textureEBO;
 
+    unsigned int VAO;
+    glGenVertexArrays(1, &VAO);
+    
     glBindVertexArray(VAO);
 
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBufferData(GL_ARRAY_BUFFER, vertices.size(), vertices.data(), GL_STATIC_DRAW);
-
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size(), indices.data(), GL_STATIC_DRAW);
+    textureVBO.data(vertices, STATIC);
+    textureEBO.data(indices, STATIC);
 
     // position attribute
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
@@ -85,6 +84,19 @@ int main()
 
     double xpos, ypos;
     float lastx = 0, lasty = 0;
+
+    std::vector<const char*> skyboxFiles
+    {
+        "assets/SkyboxSides.png",
+        "assets/SkyboxSides.png",
+        "assets/SkyboxTop.png",
+        "assets/SkyboxBottom.png",
+        "assets/SkyboxSides.png",
+        "assets/SkyboxSides.png"
+    };
+
+    TextureCubeMap skybox;
+    skybox.loadImages(skyboxFiles, true);
 
     while(!window.isWindowOpen())
     {
@@ -120,7 +132,7 @@ int main()
             previousTime = currentTime;
         }
 
-        TextureArray.use();
+        textureArray.use();
 
         projection = glm::perspective(glm::radians(45.0f), static_cast<float>(window.m_windowSize.x) / static_cast<float>(window.m_windowSize.y), 0.1f, 100.0f);
         textureShader.use();

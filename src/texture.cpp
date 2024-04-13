@@ -91,3 +91,44 @@ void Texture2DA::loadImageArray(const char* imagePath, bool flip, glm::vec2 tile
 
     stbi_image_free(data);
 }
+
+TextureCubeMap::TextureCubeMap()
+{
+    glGenTextures(1, &m_ID);
+    use();
+
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+}
+
+TextureCubeMap::~TextureCubeMap()
+{
+    glDeleteTextures(1, &m_ID);
+}
+
+void TextureCubeMap::use()
+{
+    glBindTexture(GL_TEXTURE_CUBE_MAP, m_ID);
+}
+
+void TextureCubeMap::loadImages(std::vector<const char*> imagePaths, bool flip)
+{
+    stbi_set_flip_vertically_on_load(flip);
+
+    int width, height, nrChannels;
+    for (unsigned int i = 0; i < imagePaths.size(); i++)
+    {
+        unsigned char *data = stbi_load(imagePaths[i], &width, &height, &nrChannels, 0);
+        if (data)
+            glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 
+                         0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data
+            );
+        else
+            std::cout << "Cubemap texture failed to load at path: " << imagePaths[i] << std::endl;
+
+        stbi_image_free(data);
+    }
+}
